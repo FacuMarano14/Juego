@@ -184,68 +184,91 @@ nuevos_usuarios_juego = []
 reloj = pygame.time.Clock()
 
 while run:
+    # Verificar si se está mostrando la pantalla de inicio
     if mostrar_inicio:
+        # Reproducir música de menú si no está sonando
         if not pygame.mixer.get_busy():
             sonido_menu.play(-1)
+        
+        # Mostrar la pantalla de inicio
         pantalla_inicio(ventana, fondo_inicio, font_titulo, boton_jugar, boton_opciones, boton_salir, texto_boton_jugar, texto_boton_opciones, texto_boton_salir)
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                run = False  # Salir del juego si se cierra la ventana
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Verificar si se hizo clic en el botón de jugar
                 if boton_jugar.collidepoint(event.pos):
                     mostrar_inicio = False
-                    sonido_menu.stop()  # Detén el sonido del menú
-                    sonido_gameplay.play(-1)
+                    sonido_menu.stop()  # Detener la música de menú
+                    sonido_gameplay.play(-1)  # Reproducir música de juego
+                # Verificar si se hizo clic en el botón de opciones
                 if boton_opciones.collidepoint(event.pos):
                     mostrar_inicio = False
                     mostrar_opciones = True
+                # Verificar si se hizo clic en el botón de salir
                 if boton_salir.collidepoint(event.pos):
-                    run = False
+                    run = False  # Salir del juego si se hace clic en salir
+
+    # Verificar si se está mostrando el menú de opciones
     elif mostrar_opciones:
-            menu_opciones2(ventana,fondo_opciones, font_titulo,ANCHO_PANTALLA,ALTO_PANTALLA,boton_subir_volumen,boton_bajar_volumen,boton_volver,texto_boton_subir_volumen, texto_boton_bajar_volumen, texto_boton_volver, font_inicio,volumen)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run = False
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if boton_subir_volumen.collidepoint(event.pos):
-                        volumen = min(1.0, volumen + 0.1)
-                        pygame.mixer.music.set_volume(volumen)
-                    if boton_bajar_volumen.collidepoint(event.pos):
-                        volumen = max(0.0, volumen - 0.1)
-                        pygame.mixer.music.set_volume(volumen)
-                    if boton_volver.collidepoint(event.pos):
-                        mostrar_opciones = False
-                        mostrar_inicio = True
-                
-    elif mostrar_usuario:
-        pantalla_usuario(ventana, fondo_usuario, font_inicio, user_text,fuente_inicio_txt,font_nombre,cuadro_texto_usuario,boton_ingresar)
+        # Mostrar el menú de opciones
+        menu_opciones2(ventana, fondo_opciones, font_titulo, ANCHO_PANTALLA, ALTO_PANTALLA, boton_subir_volumen, boton_bajar_volumen, boton_volver, texto_boton_subir_volumen, texto_boton_bajar_volumen, texto_boton_volver, font_inicio, volumen)
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                run = False  # Salir del juego si se cierra la ventana
             if event.type == pygame.MOUSEBUTTONDOWN:
+                # Subir el volumen si se hace clic en el botón correspondiente
+                if boton_subir_volumen.collidepoint(event.pos):
+                    volumen = min(1.0, volumen + 0.1)  # Asegurarse de que el volumen no supere 1.0
+                    pygame.mixer.music.set_volume(volumen)  # Ajustar el volumen de la música
+                # Bajar el volumen si se hace clic en el botón correspondiente
+                if boton_bajar_volumen.collidepoint(event.pos):
+                    volumen = max(0.0, volumen - 0.1)  # Asegurarse de que el volumen no sea menor que 0.0
+                    pygame.mixer.music.set_volume(volumen)  # Ajustar el volumen de la música
+                # Volver al menú principal si se hace clic en el botón correspondiente
+                if boton_volver.collidepoint(event.pos):
+                    mostrar_opciones = False
+                    mostrar_inicio = True
+
+    # Verificar si se está mostrando la pantalla de usuario
+    elif mostrar_usuario:
+        # Mostrar la pantalla de ingreso de usuario
+        pantalla_usuario(ventana, fondo_usuario, font_inicio, user_text, fuente_inicio_txt, font_nombre, cuadro_texto_usuario, boton_ingresar)
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False  # Salir del juego si se cierra la ventana
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Verificar si se hizo clic en el botón de ingresar
                 if boton_ingresar.collidepoint(event.pos):
                     mostrar_usuario = False
-
-
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:  # Si presiona Enter, guarda el nombre de usuario
+                # Guardar el nombre de usuario si se presiona Enter
+                if event.key == pygame.K_RETURN:
                     user_name = user_text
                     mostrar_usuario = False
+                # Eliminar el último carácter del texto si se presiona Backspace
                 elif event.key == pygame.K_BACKSPACE:
                     user_text = user_text[:-1]
+                # Agregar el carácter presionado al texto del usuario
                 else:
                     user_text += event.unicode
-        
+
     else:
+        # Limitar la velocidad de fotogramas del juego
         reloj.tick(FPS)
 
-        ventana.blit(fondo, (0,0))
+        # Dibujar el fondo
+        ventana.blit(fondo, (0, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                run = False  # Salir del juego si se cierra la ventana
             
             if event.type == pygame.KEYDOWN:
+                # Controlar el movimiento del jugador con las teclas WASD
                 if event.key == pygame.K_a:
                     mover_izquierda = True
                 if event.key == pygame.K_d:
@@ -256,6 +279,7 @@ while run:
                     mover_abajo = True
 
             if event.type == pygame.KEYUP:
+                # Detener el movimiento del jugador cuando se sueltan las teclas
                 if event.key == pygame.K_a:
                     mover_izquierda = False
                 if event.key == pygame.K_d:
@@ -266,29 +290,27 @@ while run:
                     mover_abajo = False
 
         if jugador.vivo:
-            #calcular movimiento jugador
+            # Calcular movimiento del jugador
             delta_x = 0
             delta_y = 0
 
+            # Dibujar al jugador en la pantalla
             jugador.dibujar(ventana)
 
-
-            if mover_arriba == True:
+            # Ajustar el movimiento del jugador según las teclas presionadas
+            if mover_arriba:
                 delta_y = -VELOCIDAD
-            if mover_abajo == True:
+            if mover_abajo:
                 delta_y = VELOCIDAD
-            if mover_izquierda == True:
+            if mover_izquierda:
                 delta_x = -VELOCIDAD
-            if mover_derecha == True:
+            if mover_derecha:
                 delta_x = VELOCIDAD
             
-
-            
-            #Mover jugador
+            # Mover al jugador
             jugador.movimiento(delta_x, delta_y)
 
-
-            #Actualizar Enemigo
+            # Actualizar y mover enemigos
             for ene in lista_enemigos:
                 ene.mov_enemigos(jugador)
                 ene.update()
@@ -296,75 +318,78 @@ while run:
 
             regenerar_enemigos(lista_enemigos, animaciones_enemigos)
 
-            #Actualiza arma
+            # Actualizar el arma
             bala = magnum.update(jugador)
             if bala:
-                grupo_balas.add(bala)
-                sonido_disparo.play()
+                grupo_balas.add(bala)  # Agregar nueva bala al grupo de balas
+                sonido_disparo.play()  # Reproducir sonido de disparo
             for bala in grupo_balas:
-                bala.update(lista_enemigos)
+                bala.update(lista_enemigos)  # Actualizar posición de las balas
 
-            #actualizar items
+            # Actualizar ítems
             grupo_items.update(jugador)
 
+            # Regenerar monedas si no hay monedas en pantalla
             if len([item for item in grupo_items if item.item_type == 0]) == 0:
                 regenerar_monedas(grupo_items, num_monedas_iniciales, coin)
-        
 
-        #Dibujar jugador
+        # Dibujar el jugador
         jugador.dibujar(ventana)
-        #borrar enemigos
+        
+        # Eliminar enemigos con energía cero y dibujar enemigos restantes
         for ene in lista_enemigos[:]:
             if ene.energia == 0:
                 lista_enemigos.remove(ene)
             else:
                 ene.update()
                 ene.dibujar(ventana)
-            
 
-
-        #Dibujar arma
+        # Dibujar el arma
         magnum.dibujar(ventana)
 
-        #Dibujar balas
+        # Dibujar balas
         for bala in grupo_balas:
             bala.update(lista_enemigos)
             bala.dibujar(ventana)
 
-        #Dibujar vida
+        # Dibujar la vida del jugador
         vida_jugador(jugador, ventana, corazon_completo, corazon_mitad, corazon_vacio)
 
-
-        #dibujar text
+        # Dibujar texto en pantalla
         dibujar_txt_pantalla(f"Score: {jugador.score}", font, YELLOW, 700, 5, ventana)
-        #Actualizar jugador
+
+        # Actualizar el estado del jugador
         jugador.update()
 
-        #dibujar items
+        # Dibujar ítems
         grupo_items.draw(ventana)
 
-        if jugador.vivo == False:
-            nuevo_usuario = guardar_usuario_2(user_text, jugador.score,nuevos_usuarios_juego,"Archivos//usuarios.csv")
+        # Manejar el final del juego si el jugador no está vivo
+        if not jugador.vivo:
+            nuevo_usuario = guardar_usuario_2(user_text, jugador.score, nuevos_usuarios_juego, "Archivos//usuarios.csv")
             sonido_gameplay.stop()
             if not sonido_game_over_escuchado:
-                sonido_game_over.play()
+                sonido_game_over.play()  # Reproducir sonido de game over
                 sonido_game_over_escuchado = True
 
+            # Mostrar pantalla de Game Over
             ventana.fill(RED)
             text_rect = game_over_txt.get_rect(center=(ANCHO_PANTALLA / 2, ALTO_PANTALLA / 2 - 100))
             ventana.blit(game_over_txt, text_rect)
             dibujar_txt_pantalla(f"SCORE: {jugador.score}", font_score_final, BLACK, ANCHO_PANTALLA / 2 - 100, ALTO_PANTALLA / 2, ventana)
             boton_menu = pygame.Rect(ANCHO_PANTALLA / 2 - 120, ALTO_PANTALLA / 2 + 100, 200, 70)
             pygame.draw.rect(ventana, WHITE, boton_menu)
-            ventana.blit(texto_boton_menu, (boton_menu.x +40, boton_menu.y +10))
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if boton_menu.collidepoint(event.pos) and not jugador.vivo:
-                    jugador.vivo = True
-                    jugador.energia = 100
-                    jugador.score = 0
-                    mostrar_inicio = True
-                    sonido_game_over_escuchado = False
-                    sonido_menu.play(-1)
+            ventana.blit(texto_boton_menu, (boton_menu.x + 40, boton_menu.y + 10))
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    # Volver al menú principal si se hace clic en el botón de menú
+                    if boton_menu.collidepoint(event.pos) and not jugador.vivo:
+                        jugador.vivo = True
+                        jugador.energia = 100
+                        jugador.score = 0
+                        mostrar_inicio = True
+                        sonido_game_over_escuchado = False
+                        sonido_menu.play(-1)  # Reproducir música de menú nuevamente
 
         
     
