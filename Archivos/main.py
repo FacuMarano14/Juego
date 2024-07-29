@@ -6,48 +6,9 @@ from weapon import Bullet
 import os
 from items import Item
 from random import randint
-
-def escalar_imagen(imagen, escala):
-    w = imagen.get_width()
-    h = imagen.get_height()
-    nueva_imagen = pygame.transform.scale(imagen, (w*escala, h*escala))
-    return nueva_imagen
-#----------------------------------------------------------------------------------
-def contar_elementos(directorio):
-    return len(os.listdir(directorio))
-#----------------------------------------------------------------------------------
-def nombre_carpetas(directorio):
-     return os.listdir(directorio)
-#----------------------------------------------------------------------------------
-def vida_jugador(jugador):
-    cor_mitad_dibuj = False
-    for i in range(3):
-        if jugador.energia >= ((i+1)*25):
-            ventana.blit(corazon_completo, (5+i*50,5))
-        elif jugador.energia % 25 > 0 and cor_mitad_dibuj == False:
-            ventana.blit(corazon_mitad, (5+i*50,5))
-            cor_mitad_dibuj = True
-        else:
-            ventana.blit(corazon_vacio, (5+i*50,5))
-#----------------------------------------------------------------------------------
-def dibujar_txt_pantalla(texto, fuente, color, x, y):
-    img = fuente.render(texto, True, color)
-    ventana.blit(img, (x,y))
-#----------------------------------------------------------------------------------
-def pantalla_inicio():
-    ventana.fill(MAGENTA)
-    dibujar_txt_pantalla("Pedrovich", font_titulo, WHITE, ANCHO_PANTALLA / 2 - 200, ALTO_PANTALLA / 2 - 200)
-    pygame.draw.rect(ventana,YELLOW,boton_jugar)
-    pygame.draw.rect(ventana,BLUE,boton_opciones)
-    pygame.draw.rect(ventana,RED,boton_salir)
-    ventana.blit(texto_boton_jugar, (boton_jugar.x +43, boton_jugar.y +17))
-    ventana.blit(texto_boton_opciones, (boton_opciones.x +30, boton_opciones.y +14))
-    ventana.blit(texto_boton_salir, (boton_salir.x +50, boton_salir.y +17))
-    pygame.display.update()
-
-#----------------------------------------------------------------------------------
-def escalar_fondo(imagen, tamaño):
-    return pygame.transform.scale(imagen, tamaño)
+import json
+import csv
+from Funciones import *
 
 pygame.init()
 pygame.mixer.init()
@@ -107,7 +68,7 @@ coin = escalar_imagen(coin, ESCALA_COIN)
 
         
 #Crear jugador clase Personaje
-jugador = Personaje(50, 50, animaciones, 00, 0)
+jugador = Personaje(50, 50, animaciones, 100, 0)
 
 # Crear enemigo clase Personaje
 caballero = Personaje(randint(0, ANCHO_PANTALLA - ANCHO_PERSONAJE), randint(0,ALTO_PANTALLA - ALTO_PERSONAJE), animaciones_enemigos[0], 75, 1)
@@ -138,18 +99,15 @@ grupo_items = pygame.sprite.Group()
 grupo_items.add(moneda)
 grupo_items.add(posion_1)
 
-# for _ in range(10):
-#     x = randint(0, ANCHO_PANTALLA)
-#     y = randint(0, ALTO_PANTALLA)
-#     nueva_moneda = Item(x, y, 0, coin)  # Crear una nueva instancia de Item con posiciones aleatorias
-#     grupo_items.add(nueva_moneda)
 
 
 font = pygame.font.Font("Font//PixeloidSans-Bold.ttf", 15)
 font_game_over = pygame.font.Font("Font//PixeloidSans-Bold.ttf", 100)
+font_score_final = pygame.font.Font("Font//PixeloidSans-Bold.ttf", 32)
 font_reinicio = pygame.font.Font("Font//PixeloidSans-Bold.ttf", 32 )
 font_inicio = pygame.font.Font("Font//PixeloidSans-Bold.ttf", 15 )
 font_titulo = pygame.font.Font("Font//PixeloidSans-Bold.ttf", 70 )
+font_nombre = pygame.font.Font("Font//PixeloidSans-Bold.ttf", 40 )
 
 
 game_over_txt = font_game_over.render("Game Over", True, BLACK)
@@ -158,13 +116,31 @@ texto_boton_menu = font_reinicio.render("Menu", True, BLACK)
 boton_jugar = pygame.Rect(ANCHO_PANTALLA / 2 - 100, ALTO_PANTALLA / 2 - 70, 150, 50)
 boton_opciones = pygame.Rect(ANCHO_PANTALLA / 2 - 100, ALTO_PANTALLA / 2 + 10, 150, 50)
 boton_salir = pygame.Rect(ANCHO_PANTALLA / 2 - 100, ALTO_PANTALLA / 2 + 100, 150, 50)
+boton_subir_volumen = pygame.Rect(ANCHO_PANTALLA / 2 - 100, ALTO_PANTALLA / 2 - 70, 180, 50)
+boton_bajar_volumen = pygame.Rect(ANCHO_PANTALLA / 2 - 100, ALTO_PANTALLA / 2 + 10, 180, 50)
+boton_volver = pygame.Rect(ANCHO_PANTALLA / 2 - 100, ALTO_PANTALLA / 2 + 100, 180, 50)
+boton_ingresar = pygame.Rect(ANCHO_PANTALLA/2 - 100, ALTO_PANTALLA/2 + 50, 200, 50)
+cuadro_texto_usuario = pygame.Rect(ANCHO_PANTALLA/2 - 100, ALTO_PANTALLA/2 - 100, 200, 50)
 
 texto_boton_jugar = font_inicio.render("Jugar", True, BLACK)
 texto_boton_opciones = font_inicio.render("Opciones", True, BLACK)
 texto_boton_salir = font_inicio.render("Salir", True, BLACK)
+texto_boton_subir_volumen = font_inicio.render("Subir volumen", True, BLACK)
+texto_boton_bajar_volumen = font_inicio.render("Bajar Volumen", True, BLACK)
+texto_boton_volver = font_inicio.render("Volver", True, BLACK)
 
 fondo = pygame.image.load("Background//fondo.png")
 fondo = escalar_fondo(fondo, (ANCHO_PANTALLA, ALTO_PANTALLA))
+fondo_inicio = pygame.image.load("Background//fondo_inicio.png")
+fondo_inicio = escalar_fondo(fondo_inicio, (ANCHO_PANTALLA, ALTO_PANTALLA))
+fondo_opciones = pygame.image.load("Background//fondo_opciones.png")
+fondo_opciones = escalar_fondo(fondo_opciones, (ANCHO_PANTALLA, ALTO_PANTALLA))
+fondo_usuario = pygame.image.load("Background//fondo_usuario.png")
+fondo_usuario = escalar_fondo(fondo_usuario, (ANCHO_PANTALLA, ALTO_PANTALLA))
+
+
+num_monedas_iniciales = 10  # Ajusta el número de monedas iniciales
+regenerar_monedas(grupo_items, num_monedas_iniciales, coin)
 
 ventana = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
 pygame.display.set_caption("Videojuego")
@@ -177,24 +153,88 @@ mover_arriba = False
 mover_abajo = False
 
 sonido_disparo = pygame.mixer.Sound("sound effects//Laser.wav")
-sonido_moneda = pygame.mixer.Sound("sound effects//Coin.wav")
+sonido_game_over = pygame.mixer.Sound("sound effects//Game_over.wav")
+sonido_gameplay = pygame.mixer.Sound("sound effects//Cancion_gameplay.wav")
+sonido_menu = pygame.mixer.Sound("sound effects//Cancion_menu.wav")
+
+sonidos = ["sound effects//Laser.wav",
+           "sound effects//Game_over.wav",
+           "sound effects//Cancion_gameplay.wav",
+           "sound effects//Cancion_menu.wav"]
+
+guardar_rutas_json(sonidos, "Archivos//Sonidos.json")
+
+user_text = ""
+
+fuente_inicio_txt = font_inicio.render("Ingresar", True, BLACK)
+
+volumen = 0.5
+
+pygame.mixer.music.set_volume(volumen)
+
 
 run = True
 mostrar_inicio = True
+mostrar_opciones = False
+mostrar_usuario = True
+sonido_game_over_escuchado = False
+
+nuevos_usuarios_juego = []
 
 reloj = pygame.time.Clock()
 
 while run:
     if mostrar_inicio:
-        pantalla_inicio()
+        if not pygame.mixer.get_busy():
+            sonido_menu.play(-1)
+        pantalla_inicio(ventana, fondo_inicio, font_titulo, boton_jugar, boton_opciones, boton_salir, texto_boton_jugar, texto_boton_opciones, texto_boton_salir)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if boton_jugar.collidepoint(event.pos):
                     mostrar_inicio = False
+                    sonido_menu.stop()  # Detén el sonido del menú
+                    sonido_gameplay.play(-1)
+                if boton_opciones.collidepoint(event.pos):
+                    mostrar_inicio = False
+                    mostrar_opciones = True
                 if boton_salir.collidepoint(event.pos):
                     run = False
+    elif mostrar_opciones:
+            menu_opciones2(ventana,fondo_opciones, font_titulo,ANCHO_PANTALLA,ALTO_PANTALLA,boton_subir_volumen,boton_bajar_volumen,boton_volver,texto_boton_subir_volumen, texto_boton_bajar_volumen, texto_boton_volver, font_inicio,volumen)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if boton_subir_volumen.collidepoint(event.pos):
+                        volumen = min(1.0, volumen + 0.1)
+                        pygame.mixer.music.set_volume(volumen)
+                    if boton_bajar_volumen.collidepoint(event.pos):
+                        volumen = max(0.0, volumen - 0.1)
+                        pygame.mixer.music.set_volume(volumen)
+                    if boton_volver.collidepoint(event.pos):
+                        mostrar_opciones = False
+                        mostrar_inicio = True
+                
+    elif mostrar_usuario:
+        pantalla_usuario(ventana, fondo_usuario, font_inicio, user_text,fuente_inicio_txt,font_nombre,cuadro_texto_usuario,boton_ingresar)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if boton_ingresar.collidepoint(event.pos):
+                    mostrar_usuario = False
+
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:  # Si presiona Enter, guarda el nombre de usuario
+                    user_name = user_text
+                    mostrar_usuario = False
+                elif event.key == pygame.K_BACKSPACE:
+                    user_text = user_text[:-1]
+                else:
+                    user_text += event.unicode
         
     else:
         reloj.tick(FPS)
@@ -254,6 +294,8 @@ while run:
                 ene.update()
                 print(ene.energia)
 
+            regenerar_enemigos(lista_enemigos, animaciones_enemigos)
+
             #Actualiza arma
             bala = magnum.update(jugador)
             if bala:
@@ -264,13 +306,13 @@ while run:
 
             #actualizar items
             grupo_items.update(jugador)
-            
-        
+
+            if len([item for item in grupo_items if item.item_type == 0]) == 0:
+                regenerar_monedas(grupo_items, num_monedas_iniciales, coin)
         
 
         #Dibujar jugador
         jugador.dibujar(ventana)
-
         #borrar enemigos
         for ene in lista_enemigos[:]:
             if ene.energia == 0:
@@ -290,11 +332,11 @@ while run:
             bala.dibujar(ventana)
 
         #Dibujar vida
-        vida_jugador(jugador)
+        vida_jugador(jugador, ventana, corazon_completo, corazon_mitad, corazon_vacio)
 
 
         #dibujar text
-        dibujar_txt_pantalla(f"Score: {jugador.score}", font, YELLOW, 700, 5)
+        dibujar_txt_pantalla(f"Score: {jugador.score}", font, YELLOW, 700, 5, ventana)
         #Actualizar jugador
         jugador.update()
 
@@ -302,9 +344,16 @@ while run:
         grupo_items.draw(ventana)
 
         if jugador.vivo == False:
+            nuevo_usuario = guardar_usuario_2(user_text, jugador.score,nuevos_usuarios_juego,"Archivos//usuarios.csv")
+            sonido_gameplay.stop()
+            if not sonido_game_over_escuchado:
+                sonido_game_over.play()
+                sonido_game_over_escuchado = True
+
             ventana.fill(RED)
             text_rect = game_over_txt.get_rect(center=(ANCHO_PANTALLA / 2, ALTO_PANTALLA / 2 - 100))
             ventana.blit(game_over_txt, text_rect)
+            dibujar_txt_pantalla(f"SCORE: {jugador.score}", font_score_final, BLACK, ANCHO_PANTALLA / 2 - 100, ALTO_PANTALLA / 2, ventana)
             boton_menu = pygame.Rect(ANCHO_PANTALLA / 2 - 120, ALTO_PANTALLA / 2 + 100, 200, 70)
             pygame.draw.rect(ventana, WHITE, boton_menu)
             ventana.blit(texto_boton_menu, (boton_menu.x +40, boton_menu.y +10))
@@ -314,14 +363,13 @@ while run:
                     jugador.energia = 100
                     jugador.score = 0
                     mostrar_inicio = True
+                    sonido_game_over_escuchado = False
+                    sonido_menu.play(-1)
 
         
-            
-            
-                    
-            
-        
+    
         pygame.display.update()
 
 pygame.quit()
+
 

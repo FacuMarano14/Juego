@@ -92,3 +92,4 @@ class Bullet(pygame.sprite.Sprite):
 
     def dibujar(self, interfaz):
         interfaz.blit(self.image, (self.rect.centerx, self.rect.centery - int(self.image.get_height()/2)))
+
